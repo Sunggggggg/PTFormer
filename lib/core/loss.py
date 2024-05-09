@@ -58,10 +58,6 @@ class GLoTLoss(nn.Module):
         self.criterion_accel = nn.MSELoss('none').to(self.device)
         self.criterion_attention = nn.CrossEntropyLoss()
 
-        # 
-        #self.criterion_entropy = nn.KLDivLoss()
-        self.criterion_entropy = nn.CosineSimilarity()
-
         self.enc_loss = batch_encoder_disc_l2_loss
         self.dec_loss = batch_adv_disc_l2_loss
 

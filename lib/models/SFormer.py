@@ -29,13 +29,15 @@ LOCAL_JOINT_INDEX = [
 ]
 
 class SFormer(nn.Module):
-    def __init__(self, num_joint=19, d_model=512, num_head=8, num_layer=3) :
+    def __init__(self, num_joint=19, d_model=512, num_head=8, num_layer=3,
+                 dropout=0., drop_path_r=0., atten_drop=0., mask_ratio=0.,) :
         super().__init__()
         assert len(LOCAL_JOINT_INDEX) == num_joint, "Check num_joint"
         d_local_model = d_model // 2
 
         self.global_joint_embed = nn.Linear(2, d_model)
-        self.global_encoder = Transformer(depth=num_layer, embed_dim=d_model, mlp_hidden_dim=d_model*2, h=num_head, length=num_joint)
+        self.global_encoder = Transformer(depth=num_layer, embed_dim=d_model, mlp_hidden_dim=d_model*2, h=num_head, 
+                                          drop_rate=dropout, drop_path_rate=drop_path_r, attn_drop_rate=atten_drop, length=num_joint)
         
         self.local_joint_embed = nn.ModuleList()
         for idx, local_joint_idx in enumerate(LOCAL_JOINT_INDEX):
@@ -43,14 +45,16 @@ class SFormer(nn.Module):
             nn.init.xavier_uniform_(proj.weight, gain=0.01)
             self.local_joint_embed.append(proj)
         self.local_proj = nn.Linear(d_model, d_local_model)
-        self.local_encoder = CrossAttention(d_local_model, num_heads=num_head, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0.)
+        self.local_encoder = Transformer(depth=num_layer, embed_dim=d_local_model, mlp_hidden_dim=d_local_model*2, h=num_head, 
+                                          drop_rate=dropout, drop_path_rate=drop_path_r, attn_drop_rate=atten_drop, length=num_joint)
+        self.local_decoder = CrossAttention(d_local_model, num_heads=num_head, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0.)
 
-    def foward_global_encoder(self, x) :
+    def foward_global(self, x) :
         joint_feat = self.global_joint_embed(x)      # [BT, J, D]
         global_joint_feat = self.global_encoder(joint_feat)
         return global_joint_feat
 
-    def foward_local_encoder(self, x, global_joint_feat) :
+    def foward_local(self, x, global_joint_feat) :
         """
         joint_feat          : [BT, J, 2]
         global_joint_feat   : [BT, J, D]
@@ -61,20 +65,20 @@ class SFormer(nn.Module):
             local_joint_feat.append(proj(acc_joint))
         local_joint_feat = torch.stack(local_joint_feat, dim=1) # [BT, J, D//2]
         g2l_joint_feat = self.local_proj(global_joint_feat)
-        local_joint_feat = self.local_encoder(local_joint_feat, g2l_joint_feat)
-
+        local_joint_feat = self.local_encoder(local_joint_feat)
+        local_joint_feat = self.local_decoder(local_joint_feat, g2l_joint_feat)
         return local_joint_feat
 
     def forward(self, x):
         """
         x : [B, T, J, 2]
         """
-        B, T, J, _ = x.shape
+        B, T, J, D = x.shape
 
-        x = x.view(-1, J, 2)
+        x = x.view(-1, J, D)
         
-        global_joint_feat = self.foward_global_encoder(x)
-        local_joint_feat = self.foward_local_encoder(x, global_joint_feat)
+        global_joint_feat = self.foward_global(x)
+        local_joint_feat = self.foward_local(x, global_joint_feat)
 
         local_joint_feat = local_joint_feat.reshape(B, T, J, -1)
-        return local_joint_feat
+        return global_joint_feat, local_joint_feat
