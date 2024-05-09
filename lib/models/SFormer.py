@@ -29,8 +29,14 @@ LOCAL_JOINT_INDEX = [
 ]
 
 class SFormer(nn.Module):
-    def __init__(self, num_joint=19, d_model=512, num_head=8, num_layer=3,
-                 dropout=0., drop_path_r=0., atten_drop=0., mask_ratio=0.,) :
+    def __init__(self, 
+                 num_joint=19, 
+                 d_model=512, 
+                 num_head=8, 
+                 num_layer=3,
+                 dropout=0., 
+                 drop_path_r=0., 
+                 atten_drop=0.) :
         super().__init__()
         assert len(LOCAL_JOINT_INDEX) == num_joint, "Check num_joint"
         d_local_model = d_model // 2

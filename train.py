@@ -71,6 +71,7 @@ def main(cfg):
         num_head=cfg.MODEL.num_head,
         s_n_layer=cfg.MODEL.s_n_layers,
         t_n_layer=cfg.MODEL.t_n_layers,
+        mask_ratio=cfg.MODEL.mask_ratio,
         dropout=cfg.MODEL.dropout, 
         drop_path_r=cfg.MODEL.drop_path_r, 
         atten_drop=cfg.MODEL.atten_drop,
