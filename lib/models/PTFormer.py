@@ -48,6 +48,5 @@ class PTFormer(nn.Module):
         local_temp_feat = local_temp_feat.unsqueeze(2)          # [B, T, 1, D]
 
         global_feat = torch.cat([global_joint_feat, global_temp_feat], dim=2)   # [B, T, J+1, D]
-        local_feat = torch.cat([local_joint_feat, local_temp_feat], dim=2)      # [B, T, J+1, ]
 
         return 
