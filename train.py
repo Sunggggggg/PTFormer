@@ -63,14 +63,18 @@ def main(cfg):
 
     # ========= Initialize networks, optimizers and lr_schedulers ========= #
     model_module = importlib.import_module('.%s' % cfg.MODEL.MODEL_NAME, 'lib.models')
-    
-
-
-
-
-
-
-
+    generator = model_module.PTFormer(
+        seqlen=cfg.DATASET.SEQLEN,
+        num_joint=cfg.DATASET.NUM_JOINT,
+        stride=cfg.DATASET.stride_short,
+        d_model=cfg.MODEL.d_model,
+        num_head=cfg.MODEL.num_head,
+        s_n_layer=cfg.MODEL.s_n_layers,
+        t_n_layer=cfg.MODEL.t_n_layers,
+        dropout=cfg.MODEL.dropout, 
+        drop_path_r=cfg.MODEL.drop_path_r, 
+        atten_drop=cfg.MODEL.atten_drop,
+    )
     logger.info(f'net: {generator}')
 
     net_params = sum(map(lambda x: x.numel(), generator.parameters()))
@@ -81,33 +85,6 @@ def main(cfg):
         lr=cfg.TRAIN.GEN_LR,
         weight_decay=cfg.TRAIN.GEN_WD,
         momentum=cfg.TRAIN.GEN_MOMENTUM,
-    )
-
-    motion_discriminator = MotionDiscriminator(
-        rnn_size=cfg.TRAIN.MOT_DISCR.HIDDEN_SIZE,
-        input_size=69,
-        num_layers=cfg.TRAIN.MOT_DISCR.NUM_LAYERS,
-        output_size=1,
-        feature_pool=cfg.TRAIN.MOT_DISCR.FEATURE_POOL,
-        attention_size=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.SIZE,
-        attention_layers=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.LAYERS,
-        attention_dropout=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.DROPOUT
-    ).to(cfg.DEVICE)
-    
-    dis_motion_optimizer = get_optimizer(
-        model=motion_discriminator,
-        optim_type=cfg.TRAIN.MOT_DISCR.OPTIM,
-        lr=cfg.TRAIN.MOT_DISCR.LR,
-        weight_decay=cfg.TRAIN.MOT_DISCR.WD,
-        momentum=cfg.TRAIN.MOT_DISCR.MOMENTUM
-    )
-    
-    motion_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        dis_motion_optimizer,
-        mode='min',
-        factor=0.1,
-        patience=cfg.TRAIN.LR_PATIENCE,
-        verbose=True,
     )
 
     lr_scheduler = CosineAnnealingWarmupRestarts(
@@ -122,13 +99,10 @@ def main(cfg):
         cfg=cfg,
         data_loaders=data_loaders,
         generator=generator,
-        motion_discriminator=motion_discriminator,
         criterion=loss,
-        dis_motion_optimizer=dis_motion_optimizer,
         gen_optimizer=gen_optimizer,
         writer=writer,
         lr_scheduler=lr_scheduler,
-        motion_lr_scheduler=motion_lr_scheduler,
         val_epoch=cfg.TRAIN.val_epoch
     ).fit()
 

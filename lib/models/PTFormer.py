@@ -7,10 +7,15 @@ from lib.models.TFormer import TFormer
 class PTFormer(nn.Module):
     def __init__(self, 
                  seqlen,
+                 stride,
                  num_joint,
                  d_model,
                  num_head,
                  s_n_layer,
+                 t_n_layer,
+                 dropout=0., 
+                 drop_path_r=0., 
+                 atten_drop=0.,
                  ) :
         super().__init__()
         self.sformer = SFormer(num_joint=num_joint, d_model=d_model, num_head=num_head, num_layer=s_n_layer)
