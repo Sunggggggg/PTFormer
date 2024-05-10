@@ -115,7 +115,7 @@ if __name__ == "__main__":
         print(f"{cfg.TRAIN.PRETRAINED} is not a pretrained model! Exiting...")
         import sys; sys.exit()
 
-    model.regressor.smpl = SMPL(
+    model.global_regressor.smpl = SMPL(
         SMPL_MODEL_DIR,
         batch_size=64,
         create_transl=False,

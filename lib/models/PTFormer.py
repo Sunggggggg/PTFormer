@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+from lib.models.transformer import Transformer
 from lib.models.trans_operator import CrossAttention
 from lib.models.spin import Regressor
 from lib.models.HSCR import HSCR
@@ -27,16 +28,16 @@ class PTFormer(nn.Module):
         self.stride = stride
         self.d_model = d_model
 
+        # 
         self.s_former = SFormer(num_joint=num_joint, d_model=d_model, num_head=num_head,
                                  num_layer=s_n_layer, dropout=dropout, drop_path_r=drop_path_r, atten_drop=atten_drop)
         self.t_former = TFormer(seqlen=seqlen, stride=stride, d_model=d_model*2, num_head=num_head,
                                 num_layer=t_n_layer, dropout=dropout, drop_path_r=drop_path_r, atten_drop=atten_drop, mask_ratio=mask_ratio)
+       
         self.joint_weight_proj = nn.Linear(2048, num_joint)
-        
         self.global_alpha_proj = nn.Linear(d_model*2, d_model*2)
         self.local_alpha_proj = nn.Linear(d_model, d_model)
         self.out_proj = nn.Linear(d_model, 2048)
-
         self.global_regressor = Regressor()
         self.local_regressor = HSCR(drop=drop_reg_short)
 
@@ -156,8 +157,11 @@ class PTFormer(nn.Module):
         vitpose_j2d = self.cat_pelvis_neck(vitpose_j2d)
         B, T, J = vitpose_j2d.shape[:-1]
 
+        # Intra-frame Joint Attention
         global_joint_feat, local_joint_feat = self.s_former(vitpose_j2d)                # [B, T, J, D], [B, T, J, D/2]
         global_joint_feat, local_joint_feat = self.joint_weighted_sum(input, global_joint_feat, local_joint_feat)   # [B, T, D], [B, T, D/2]
+        
+        # Intra-frame Joint Attention
         global_temp_feat, local_temp_feat, mask_ids = self.t_former(input, is_train)    # [B, T, 256], [B, t, D/2]
 
         # 
