@@ -90,50 +90,22 @@ if __name__ == "__main__":
     avg_filter = args.filter
     gender = 'neutral'
 
-    model_module = importlib.import_module('.%s' % 'GLoT_LQ', 'lib.models')
-    model = model_module.GLoT( 
+    model_module = importlib.import_module('.%s' % cfg.MODEL.MODEL_NAME, 'lib.models')
+    model = model_module.PTFormer(
         seqlen=cfg.DATASET.SEQLEN,
-        batch_size=cfg.TRAIN.BATCH_SIZE,
-        n_layers=cfg.MODEL.n_layers,
+        num_joint=cfg.DATASET.NUM_JOINT,
+        stride=cfg.MODEL.stride_short,
         d_model=cfg.MODEL.d_model,
         num_head=cfg.MODEL.num_head,
-        dropout=cfg.MODEL.dropout,
-        drop_path_r=cfg.MODEL.drop_path_r,
-        atten_drop=cfg.MODEL.atten_drop,
+        s_n_layer=cfg.MODEL.s_n_layers,
+        t_n_layer=cfg.MODEL.t_n_layers,
         mask_ratio=cfg.MODEL.mask_ratio,
-        short_n_layers = cfg.MODEL.short_n_layers,
-        short_d_model = cfg.MODEL.short_d_model,
-        short_num_head = cfg.MODEL.short_num_head,
-        short_dropout = cfg.MODEL.short_dropout, 
-        short_drop_path_r = cfg.MODEL.short_drop_path_r,
-        short_atten_drop = cfg.MODEL.short_atten_drop,
-        stride_short=cfg.MODEL.stride_short,
-        drop_reg_short=cfg.MODEL.drop_reg_short,
-        pretrained=cfg.TRAIN.PRETRAINED_REGRESSOR
-        ).to(cfg.DEVICE)
+        dropout=cfg.MODEL.dropout, 
+        drop_path_r=cfg.MODEL.drop_path_r, 
+        atten_drop=cfg.MODEL.atten_drop,
+        drop_reg_short=cfg.MODEL.drop_reg_short
+    ).to(cfg.DEVICE)
 
-    # model_module = importlib.import_module('.%s' % 'CFoT', 'lib.models')
-    # model = model_module.CFoT( 
-    #     seqlen=cfg.DATASET.SEQLEN,
-    #     batch_size=cfg.TRAIN.BATCH_SIZE,
-    #     n_layers=cfg.MODEL.n_layers,
-    #     d_model=cfg.MODEL.d_model,
-    #     num_head=cfg.MODEL.num_head,
-    #     dropout=cfg.MODEL.dropout,
-    #     drop_path_r=cfg.MODEL.drop_path_r,
-    #     atten_drop=cfg.MODEL.atten_drop,
-    #     mask_ratio=cfg.MODEL.mask_ratio,
-    #     short_n_layers = cfg.MODEL.short_n_layers,
-    #     short_d_model = cfg.MODEL.short_d_model,
-    #     short_num_head = cfg.MODEL.short_num_head,
-    #     short_dropout = cfg.MODEL.short_dropout, 
-    #     short_drop_path_r = cfg.MODEL.short_drop_path_r,
-    #     short_atten_drop = cfg.MODEL.short_atten_drop,
-    #     stride_short=cfg.MODEL.stride_short,
-    #     drop_reg_short=cfg.MODEL.drop_reg_short,
-    #     pretrained=cfg.TRAIN.PRETRAINED_REGRESSOR
-    #     ).to(cfg.DEVICE)
-        
     if cfg.TRAIN.PRETRAINED != '' and os.path.isfile(cfg.TRAIN.PRETRAINED):
         checkpoint = torch.load(cfg.TRAIN.PRETRAINED)
         # best_performance = checkpoint['performance']
