@@ -16,7 +16,6 @@ from lib.core.loss import GLoTLoss
 from lib.core.trainer import Trainer
 from lib.core.config import parse_args, BASE_DATA_DIR
 from lib.utils.utils import prepare_output_dir
-from lib.models import MotionDiscriminator
 from lib.dataset._loaders import get_data_loaders
 from lib.utils.utils import create_logger, get_optimizer
 from lr_scheduler import CosineAnnealingWarmupRestarts
