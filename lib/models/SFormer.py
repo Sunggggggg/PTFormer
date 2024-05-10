@@ -85,6 +85,8 @@ class SFormer(nn.Module):
         
         global_joint_feat = self.foward_global(x)
         local_joint_feat = self.foward_local(x, global_joint_feat)
-
+        
+        global_joint_feat = global_joint_feat.reshape(B, T, J, -1)
         local_joint_feat = local_joint_feat.reshape(B, T, J, -1)
+
         return global_joint_feat, local_joint_feat
