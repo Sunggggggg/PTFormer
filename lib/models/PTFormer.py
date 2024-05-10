@@ -55,10 +55,11 @@ class PTFormer(nn.Module):
 
         global_joint_feat, local_joint_feat : [B, T, 1, D]
         """
+        B = input.shape[0]
         joint_weight = self.joint_weight_proj(input)                    # [B, T, J]
         joint_weight = joint_weight.softmax(dim=-1).unsqueeze(2)        # [B, T, 1, J]
-        global_joint_feat = (joint_weight @ global_joint_feat).squeeze(2)
-        local_joint_feat = (joint_weight @ local_joint_feat).squeeze(2)
+        global_joint_feat = (joint_weight @ global_joint_feat).view(B, self.seqlen, -1)
+        local_joint_feat = (joint_weight @ local_joint_feat).view(B, self.seqlen, -1)
         
         return global_joint_feat, local_joint_feat
 
