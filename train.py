@@ -65,7 +65,7 @@ def main(cfg):
     generator = model_module.PTFormer(
         seqlen=cfg.DATASET.SEQLEN,
         num_joint=cfg.DATASET.NUM_JOINT,
-        stride=cfg.DATASET.stride_short,
+        stride=cfg.MODEL.stride_short,
         d_model=cfg.MODEL.d_model,
         num_head=cfg.MODEL.num_head,
         s_n_layer=cfg.MODEL.s_n_layers,
