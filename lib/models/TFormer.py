@@ -46,6 +46,7 @@ class TFormer(nn.Module):
         local_temp_feat = self.local_proj(local_temp_feat)
         local_temp_feat = self.local_encoder(local_temp_feat)
         g2l_temp_feat = self.g2l_proj(global_temp_feat)
+        local_temp_feat = local_temp_feat[:, self.stride_short - 1: self.stride_short + 2]
         local_temp_feat = self.local_decoder(local_temp_feat, g2l_temp_feat)
 
         return local_temp_feat
