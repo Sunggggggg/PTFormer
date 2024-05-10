@@ -63,3 +63,4 @@ MODEL:
   atten_drop: 0.
   mask_ratio: 0.5
   stride_short: 4
+  drop_reg_short: 0.25

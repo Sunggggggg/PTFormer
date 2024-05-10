@@ -75,6 +75,7 @@ def main(cfg):
         dropout=cfg.MODEL.dropout, 
         drop_path_r=cfg.MODEL.drop_path_r, 
         atten_drop=cfg.MODEL.atten_drop,
+        drop_reg_short=cfg.MODEL.drop_reg_short
     )
     logger.info(f'net: {generator}')
 

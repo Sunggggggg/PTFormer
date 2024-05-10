@@ -100,7 +100,7 @@ class PTFormer(nn.Module):
         
         return smpl_output_global, pred_global
     
-    def local_prediction(self, local_joint_feat, local_temp_feat, pred_global, is_train=False):
+    def local_prediction(self, local_joint_feat, local_temp_feat, pred_global, is_train=False, J_regressor=None):
         """
         local_joint_feat   : [B, 3, D/2] D/2 = 256
         local_temp_feat    : [B, T, D/2]
@@ -161,6 +161,6 @@ class PTFormer(nn.Module):
 
         # 
         smpl_output_global, pred_global = self.global_prediction(global_joint_feat, global_temp_feat, is_train, J_regressor)
-        smpl_output = self.local_prediction(local_joint_feat, local_temp_feat, pred_global, is_train)
+        smpl_output = self.local_prediction(local_joint_feat, local_temp_feat, pred_global, is_train, J_regressor)
         
         return smpl_output, mask_ids, smpl_output_global
