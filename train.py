@@ -75,7 +75,7 @@ def main(cfg):
         drop_path_r=cfg.MODEL.drop_path_r, 
         atten_drop=cfg.MODEL.atten_drop,
         drop_reg_short=cfg.MODEL.drop_reg_short
-    )
+    ).to(cfg.DEVICE)
     logger.info(f'net: {generator}')
 
     net_params = sum(map(lambda x: x.numel(), generator.parameters()))
