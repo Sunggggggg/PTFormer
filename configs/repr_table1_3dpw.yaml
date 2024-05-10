@@ -24,19 +24,19 @@ TRAIN:
   BATCH_SIZE: 64
   NUM_ITERS_PER_EPOCH: 1000
   #PRETRAINED: '/mnt/SKY/GLoT_ViTPose/experiments/06-05-2024_17-24-39_Context_Token_LQ/checkpoint.pth.tar' # for testing
-  #PRETRAINED_REGRESSOR: '/mnt/SKY/preprocessed_data/spin_model_checkpoint.pth.tar' # your path
+  PRETRAINED_REGRESSOR: '/mnt/SKY/preprocessed_data/spin_model_checkpoint.pth.tar' # your path
   RESUME: ''
   START_EPOCH: 0
   END_EPOCH: 50
   LR_PATIENCE: 5
   DATA_2D_RATIO: 0.6
   OVERLAP: 0.
-  DATASETS_2D:
-    - 'Insta'
+  #DATASETS_2D:
+  #  - 'Insta'
   DATASETS_3D:
     - 'ThreeDPW'
-    - 'MPII3D'
-    - 'Human36M'
+  #  - 'MPII3D'
+  #  - 'Human36M'
   DATASET_EVAL: 'ThreeDPW'
   GEN_LR: 0.0001
   GEN_WD: 0.0

@@ -25,7 +25,7 @@ class TFormer(nn.Module):
         self.global_encoder = MaskTransformer(depth=num_layer, embed_dim=d_model, mlp_hidden_dim=d_model*2, h=num_head,
                                        drop_rate=dropout, drop_path_rate=drop_path_r, attn_drop_rate=atten_drop, length=seqlen)
         
-        self.local_proj = nn.Linear(d_model, d_local_model)
+        self.local_proj = nn.Linear(2048, d_local_model)
         self.g2l_proj = nn.Linear(d_model, d_local_model)
         self.local_encoder = Transformer(depth=num_layer, embed_dim=d_local_model, mlp_hidden_dim=d_local_model*2, h=num_head,
                                        drop_rate=dropout, drop_path_rate=drop_path_r, attn_drop_rate=atten_drop, length=stride*2+1)
