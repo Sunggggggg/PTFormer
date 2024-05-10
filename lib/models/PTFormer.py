@@ -29,10 +29,9 @@ class PTFormer(nn.Module):
 
         self.s_former = SFormer(num_joint=num_joint, d_model=d_model, num_head=num_head,
                                  num_layer=s_n_layer, dropout=dropout, drop_path_r=drop_path_r, atten_drop=atten_drop)
-        self.t_former = TFormer(seqlen=seqlen, stride=stride, d_model=d_model, num_head=num_head,
+        self.t_former = TFormer(seqlen=seqlen, stride=stride, d_model=d_model*2, num_head=num_head,
                                 num_layer=t_n_layer, dropout=dropout, drop_path_r=drop_path_r, atten_drop=atten_drop, mask_ratio=mask_ratio)
         self.joint_weight_proj = nn.Linear(2048, num_joint)
-        
         
         self.global_alpha_proj = nn.Linear(d_model*2, d_model*2)
         self.local_alpha_proj = nn.Linear(d_model, d_model)
@@ -66,13 +65,13 @@ class PTFormer(nn.Module):
 
     def global_prediction(self, global_joint_feat, global_temp_feat, is_train=False, J_regressor=None):
         """
-        global_joint_feat   : [B, T, D]
-        global_temp_feat    : [B, T, D]
+        global_joint_feat   : [B, T, D] D=512
+        global_temp_feat    : [B, T, D] D=512
         """
         B = global_joint_feat.shape[0]
 
         # Aggregation
-        global_feat = torch.cat([global_joint_feat, global_temp_feat], dim=-1)           # [B, T, 2D]
+        global_feat = torch.cat([global_joint_feat, global_temp_feat], dim=-1)           # [B, T, 2D]\
         alpha = self.global_alpha_proj(global_feat).reshape(B, self.seqlen, self.d_model, 2)
         alpha = alpha.softmax(dim=-1)   # [B, T, D, 2]
 
@@ -104,8 +103,8 @@ class PTFormer(nn.Module):
     
     def local_prediction(self, local_joint_feat, local_temp_feat, pred_global, is_train=False, J_regressor=None):
         """
-        local_joint_feat   : [B, 3, D/2] D/2 = 256
-        local_temp_feat    : [B, T, D/2]
+        local_joint_feat   : [B, 3, D/2] 256
+        local_temp_feat    : [B, T, D/2] 512
 
         """
         B = local_joint_feat.shape[0]
@@ -113,7 +112,7 @@ class PTFormer(nn.Module):
         local_joint_feat = local_joint_feat[:, mid_frame - 1 : mid_frame + 2]
 
         # Aggregation
-        local_feat = torch.cat([local_joint_feat, local_temp_feat], dim=-1)         
+        local_feat = torch.cat([local_joint_feat, local_temp_feat], dim=-1)
         alpha = self.local_alpha_proj(local_feat).reshape(B, 3, self.d_model//2, 2)
         alpha = alpha.softmax(dim=-1)  
 
@@ -159,7 +158,7 @@ class PTFormer(nn.Module):
 
         global_joint_feat, local_joint_feat = self.s_former(vitpose_j2d)                # [B, T, J, D], [B, T, J, D/2]
         global_joint_feat, local_joint_feat = self.joint_weighted_sum(input, global_joint_feat, local_joint_feat)   # [B, T, D], [B, T, D/2]
-        global_temp_feat, local_temp_feat, mask_ids = self.t_former(input, is_train)    # [B, T, D], [B, t, D/2]
+        global_temp_feat, local_temp_feat, mask_ids = self.t_former(input, is_train)    # [B, T, 256], [B, t, D/2]
 
         # 
         smpl_output_global, pred_global = self.global_prediction(global_joint_feat, global_temp_feat, is_train, J_regressor)
