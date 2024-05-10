@@ -5,7 +5,7 @@ from lib.models.transformer import Transformer
 from lib.models.trans_operator import CrossAttention
 from lib.models.spin import Regressor
 from lib.models.HSCR import HSCR
-from lib.models.SFormer import SFormer
+from lib.models.SFormer import GL_SFormer
 from lib.models.TFormer import TFormer
 
 class PTFormer(nn.Module):
@@ -29,7 +29,7 @@ class PTFormer(nn.Module):
         self.d_model = d_model
 
         # 
-        self.s_former = SFormer(num_joint=num_joint, d_model=d_model, num_head=num_head,
+        self.s_former = GL_SFormer(num_joint=num_joint, d_model=d_model, num_head=num_head,
                                  num_layer=s_n_layer, dropout=dropout, drop_path_r=drop_path_r, atten_drop=atten_drop)
         self.t_former = TFormer(seqlen=seqlen, stride=stride, d_model=d_model*2, num_head=num_head,
                                 num_layer=t_n_layer, dropout=dropout, drop_path_r=drop_path_r, atten_drop=atten_drop, mask_ratio=mask_ratio)

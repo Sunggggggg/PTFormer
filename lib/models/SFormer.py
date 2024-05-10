@@ -28,7 +28,7 @@ LOCAL_JOINT_INDEX = [
     [17]            # 18
 ]
 
-class SFormer(nn.Module):
+class GL_SFormer(nn.Module):
     def __init__(self, 
                  num_joint=19, 
                  d_model=512, 
@@ -47,7 +47,7 @@ class SFormer(nn.Module):
         
         self.local_joint_embed = nn.ModuleList()
         for idx, local_joint_idx in enumerate(LOCAL_JOINT_INDEX):
-            proj = nn.Linear(2 * (len(local_joint_idx) + 1), d_local_model)
+            proj = nn.Linear(2 * len(local_joint_idx) + d_model, d_local_model)
             nn.init.xavier_uniform_(proj.weight, gain=0.01)
             self.local_joint_embed.append(proj)
         self.local_proj = nn.Linear(d_model, d_local_model)
@@ -67,7 +67,7 @@ class SFormer(nn.Module):
         """
         local_joint_feat = []
         for idx, (local_joint_idx, proj) in enumerate(zip(LOCAL_JOINT_INDEX, self.local_joint_embed)):
-            acc_joint = torch.cat([x[:, i] for i in local_joint_idx] + [x[:, idx]], dim=-1)  #[BT, 2*(n+1)]
+            acc_joint = torch.cat([x[:, i] for i in local_joint_idx] + [global_joint_feat[:, idx]], dim=-1)  #
             local_joint_feat.append(proj(acc_joint))
         local_joint_feat = torch.stack(local_joint_feat, dim=1) # [BT, J, D//2]
         g2l_joint_feat = self.local_proj(global_joint_feat)
@@ -90,3 +90,28 @@ class SFormer(nn.Module):
         local_joint_feat = local_joint_feat.reshape(B, T, J, -1)
 
         return global_joint_feat, local_joint_feat
+    
+class H_SFormer(nn.Module):
+    def __init__(self, 
+                 num_joint=19, 
+                 d_model=512, 
+                 num_head=8, 
+                 num_layer=3,
+                 dropout=0., 
+                 drop_path_r=0., 
+                 atten_drop=0.
+                 ) :
+        super().__init__()
+        assert len(LOCAL_JOINT_INDEX) == num_joint, "Check num_joint"
+        self.global_encoder = Transformer(depth=num_layer, embed_dim=d_model, mlp_hidden_dim=d_model*2, h=num_head, 
+                                          drop_rate=dropout, drop_path_rate=drop_path_r, attn_drop_rate=atten_drop, length=num_joint)
+    
+    def forward_global(self, x):
+
+
+        return
+
+    def forward(self, x):
+        
+        
+        return 
